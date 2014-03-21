@@ -147,7 +147,10 @@ public class InCallPresenter implements CallList.Listener {
         mCallList.addListener(this);
 
         // Initialize VideoCallManager. Instantiates the singleton.
-        VideoCallManager.getInstance(mContext);
+        if (CallUtils.hasImsCall(CallList.getInstance()))
+        {
+            VideoCallManager.getInstance(mContext);
+        }
 
         Log.d(this, "Finished InCallPresenter.setUp");
     }
