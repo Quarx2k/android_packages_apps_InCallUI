@@ -389,6 +389,9 @@ public class ContactInfoCache implements ContactsAsyncHelper.OnImageLoadComplete
                 Log.v(TAG, "personUri is null. Just use unknown picture.");
                 photo = context.getResources().getDrawable(R.drawable.picture_unknown);
             } else {
+                if (info.cachedPhoto != null) {
+                    photo = info.cachedPhoto;
+                }
                 cce.personUri = personUri;
             }
         }

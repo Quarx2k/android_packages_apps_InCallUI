@@ -335,6 +335,12 @@ public class InCallPresenter implements CallList.Listener {
             return;
         }
         InCallState newState = getPotentialStateFromCallList(callList);
+
+        // TODO what about all of the stateA -> stateA non-transitions that occur?
+        if (newState == InCallState.NO_CALLS && mInCallState == InCallState.NO_CALLS) {
+            return;
+        }
+
         newState = startOrFinishUi(newState);
 
         // Renable notification shade and soft navigation buttons, if we are no longer in the

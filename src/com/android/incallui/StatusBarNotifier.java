@@ -93,7 +93,8 @@ public class StatusBarNotifier implements InCallPresenter.InCallStateListener {
     private int mCallState = Call.State.INVALID;
     private int mSavedIcon = 0;
     private int mSavedContent = 0;
-    private Bitmap mSavedLargeIcon;
+    private Bitmap mSavedLargeIcon = null;
+    private Bitmap mSavedLargeIconRef = null;
     private String mSavedContentTitle;
 
     public StatusBarNotifier(Context context, ContactInfoCache contactInfoCache) {
@@ -375,9 +376,8 @@ public class StatusBarNotifier implements InCallPresenter.InCallStateListener {
 
         // any change means we are definitely updating
         boolean retval = (mSavedIcon != icon) || (mSavedContent != content) ||
-                (mCallState != state) || contentTitleChanged ||
-                // I'd like to use Bitmap.getGenerationId(), but as with the pointers it changes whilst the content stays the same oO
-                mSavedLargeIcon == null || !mSavedLargeIcon.sameAs(largeIcon);
+                (mCallState != state) || (mSavedLargeIcon != largeIcon) ||
+                contentTitleChanged;
 
         // A full screen intent means that we have been asked to interrupt an activity,
         // so we definitely want to show it.
@@ -432,15 +432,17 @@ public class StatusBarNotifier implements InCallPresenter.InCallStateListener {
             largeIcon = ((BitmapDrawable) contactInfo.photo).getBitmap();
         }
 
-        if (largeIcon != null) {
+        // Only scale for changed source picture
+        if (largeIcon != null && mSavedLargeIconRef != largeIcon) {
             final int height = (int) mContext.getResources().getDimension(
                     android.R.dimen.notification_large_icon_height);
             final int width = (int) mContext.getResources().getDimension(
                     android.R.dimen.notification_large_icon_width);
-            largeIcon = Bitmap.createScaledBitmap(largeIcon, width, height, false);
+            mSavedLargeIconRef = largeIcon;
+            return Bitmap.createScaledBitmap(largeIcon, width, height, false);
         }
 
-        return largeIcon;
+        return mSavedLargeIcon;
     }
 
     /**
