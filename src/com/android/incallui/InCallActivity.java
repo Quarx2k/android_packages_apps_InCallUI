@@ -150,6 +150,16 @@ public class InCallActivity extends Activity {
                 false, mSettingsObserver);
         updateSettings();
 
+        // Handle the Intent we were launched with, but only if this is the
+        // the very first time we're being launched (ie. NOT if we're being
+        // re-initialized after previously being shut down.)
+        // Once we're up and running, any future Intents we need
+        // to handle will come in via the onNewIntent() method.
+        if (icicle == null) {
+            Log.d(this, "this is our very first launch, checking intent...");
+            internalResolveIntent(getIntent());
+        }
+
         Log.d(this, "onCreate(): exit");
     }
 
@@ -184,6 +194,11 @@ public class InCallActivity extends Activity {
             registerReceiver(mLidStateChangeReceiver, new IntentFilter(
                     WindowManagerPolicy.ACTION_LID_STATE_CHANGED));
         }
+
+        final Call call = CallList.getInstance().getIncomingCall();
+        if (call != null) {
+            CallCommandClient.getInstance().setSystemBarNavigationEnabled(false);
+        }
     }
 
     // onPause is guaranteed to be called when the InCallActivity goes
@@ -201,6 +216,8 @@ public class InCallActivity extends Activity {
         mDialpadFragment.onDialerKeyUp(null);
 
         InCallPresenter.getInstance().onUiShowing(false);
+
+        CallCommandClient.getInstance().setSystemBarNavigationEnabled(true);
     }
 
     @Override
@@ -585,6 +602,8 @@ public class InCallActivity extends Activity {
             mConferenceManagerFragment.setVisible(true);
             mConferenceManagerShown = true;
             updateSystemBarTranslucency();
+        } else {
+            mConferenceManagerFragment.setVisible(false);
         }
     }
 
